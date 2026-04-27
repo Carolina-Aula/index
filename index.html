@@ -562,25 +562,37 @@
   }
 
   const statsObs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const stats = entry.target.querySelectorAll('.hero-stat strong');
-        if (stats[0]) animateValue(stats[0], 0, 100, 1400, '+');
-        if (stats[1]) {
-          let t = null;
-          const el = stats[1];
-          const start = performance.now();
-          const run = (now) => {
-            const p = Math.min((now - start) / 1400, 1);
-            const v = (4 + p).toFixed(1);
-            el.textContent = v + '★';
-            if (p < 1) t = requestAnimationFrame(run);
-          };
-          t = requestAnimationFrame(run);
-        }
-        statsObs.unobserve(entry.target);
-      }
-    });
+     entries.forEach(entry => {
+       if (!entry.isIntersecting) return;
+       const stats = entry.target.querySelectorAll('.hero-stat strong');
+       if (stats[0]) {
+         animateValue(stats[0], 0, 50, 1400, '+');
+       }
+       if (stats[1]) {
+         const el = stats[1];
+         let startValue = 4.0;
+         const endValue = 4.9;
+         const duration = 1200;
+         const startTime = performance.now();
+   
+         function animate(now) {
+           const progress = Math.min((now - startTime) / duration, 1);
+           const value = (startValue + (endValue - startValue) * progress).toFixed(1);
+           el.textContent = value + '★';
+   
+           if (progress < 1) {
+             requestAnimationFrame(animate);
+           }
+         }
+   
+         requestAnimationFrame(animate);
+       }
+   
+       statsObs.unobserve(entry.target);
+     });
+   }, {
+     threshold: 0.5
+   });
   }, { threshold: 0.5 });
 
   const heroStats = document.querySelector('.hero-stats');
